@@ -45,6 +45,15 @@ module CarrierWave
 
     private
     def call_store_meta(file = nil)
+      # workaround error during copying of remote asset to new asset
+      # using `foo.send(:"remote_bar_url=", baz)`
+      # Not sure why this is happening, started after upgrade to Rails 4.2
+      begin
+        self.file && self.file.content_type
+      rescue NoMethodError
+        return
+      end
+
       # Re-retrieve metadata for a file only if model is not present OR
       # model is not saved.
       if model.nil? || (model.respond_to?(:new_record?) && model.new_record?)
